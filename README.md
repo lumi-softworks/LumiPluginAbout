@@ -42,6 +42,8 @@ Why: Xcode's package dependency list shows the upstream manifest's `Package(name
 
 ## Page Structure
 
+iOS uses a native `Form` grouped list (matching the Settings app); macOS uses the desktop card layout.
+
 The page has exactly two sections, ordered by `AboutSection.allCases`:
 
 | Order | Section | Content |
@@ -135,7 +137,7 @@ AboutPlugin(configuration: ..., policy: .disabled)
 
 ## Link Handling
 
-The detail view opens links via SwiftUI's `openURL` environment value, which is naturally cross-platform (including visionOS) and needs no AppKit / UIKit branching — `UIApplication.shared.open` is unavailable on visionOS.
+iOS opens external links with native `Link`; macOS uses SwiftUI's `openURL` environment value. Both hand the URL to the system default browser and need no AppKit / UIKit branching.
 
 ## Catalog Data
 

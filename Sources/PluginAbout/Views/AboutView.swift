@@ -11,10 +11,7 @@ import SwiftUI
 /// 「我们的产品」放在页面最底部：它介绍的是同一实验室的其它产品，
 /// 而不是本应用本身的信息，排在前面会喧宾夺主。
 ///
-/// 行一律作为 `AppSettingSection` 的直接子元素（不套 `VStack`）：
-/// - macOS：section 内部是 `VStack(spacing: 12)`，行间自动留白；
-/// - iOS：section 内部是 `VStack(spacing: 0)`，靠 `AppSettingRow`
-///   自带的发丝分隔线区分行（再画一条会变成双线）。
+/// iOS 使用系统 `Form` 分组列表；macOS 使用 `AppSettingsContentScaffold` 卡片布局。
 public struct AboutView: View {
     /// 全部产品条目（应用与网站混排）。
     private let entries: [CofficApp]
@@ -51,6 +48,155 @@ public struct AboutView: View {
     }
 
     public var body: some View {
+        #if os(iOS)
+        iosContent
+        #else
+        desktopContent
+        #endif
+    }
+
+    #if os(iOS)
+    private var iosContent: some View {
+        Form {
+            Section {
+                iosLinkRow(
+                    title: officialWebsiteTitle,
+                    description: hostDescription(for: configuration.officialWebsiteURLString),
+                    systemImage: "globe",
+                    urlString: configuration.officialWebsiteURLString
+                )
+
+                if let privacyURL = configuration.privacyPolicyURLString {
+                    iosLinkRow(
+                        title: privacyPolicyTitle,
+                        description: hostDescription(for: privacyURL),
+                        systemImage: "hand.raised",
+                        urlString: privacyURL
+                    )
+                }
+
+                if let termsURL = configuration.termsOfServiceURLString {
+                    iosLinkRow(
+                        title: termsOfServiceTitle,
+                        description: hostDescription(for: termsURL),
+                        systemImage: "doc.text",
+                        urlString: termsURL
+                    )
+                }
+
+                iosLinkRow(
+                    title: accessibilityTitle,
+                    description: hostDescription(for: CofficApps.accessibilityURLString),
+                    systemImage: "accessibility",
+                    urlString: CofficApps.accessibilityURLString
+                )
+
+                iosLinkRow(
+                    title: aiUsageTitle,
+                    description: hostDescription(for: CofficApps.aiUsageURLString),
+                    systemImage: "sparkles",
+                    urlString: CofficApps.aiUsageURLString
+                )
+            } header: {
+                Text(aboutUsTitle)
+            }
+
+            Section {
+                ForEach(entries) { entry in
+                    iosLinkRow(
+                        title: pluginLocalization.string(entry.nameKey),
+                        description: pluginLocalization.string(entry.taglineKey),
+                        systemImage: entry.systemImage,
+                        urlString: entry.urlString,
+                        badge: entry.kind == .website ? websiteBadgeTitle : nil
+                    )
+                }
+
+                iosLinkRow(
+                    title: allProductsTitle,
+                    description: allProductsDescription,
+                    systemImage: "square.grid.2x2",
+                    urlString: allProductsURLString
+                )
+            } header: {
+                Text(ourProductsTitle)
+            }
+        }
+    }
+
+    /// 通用链接行：图标 + 标题 / 说明 + 跳转箭头。
+    ///
+    /// - Parameter badge: 名称右侧的标签（网站条目用），为空时不占位。
+    @ViewBuilder
+    private func iosLinkRow(
+        title: String,
+        description: String,
+        systemImage: String,
+        urlString: String,
+        badge: String? = nil
+    ) -> some View {
+        if let url = URL(string: urlString) {
+            Link(destination: url) {
+                iosLinkRowContent(
+                    title: title,
+                    description: description,
+                    systemImage: systemImage,
+                    badge: badge
+                )
+            }
+            .buttonStyle(.plain)
+        } else {
+            iosLinkRowContent(
+                title: title,
+                description: description,
+                systemImage: systemImage,
+                badge: badge
+            )
+        }
+    }
+
+    private func iosLinkRowContent(
+        title: String,
+        description: String,
+        systemImage: String,
+        badge: String?
+    ) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Text(title)
+                        .foregroundStyle(.primary)
+
+                    if let badge {
+                        Text(badge)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Text(description)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(minWidth: 0, alignment: .leading)
+
+            Spacer(minLength: 8)
+
+            Image(systemName: "arrow.up.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .contentShape(Rectangle())
+    }
+    #endif
+
+    private var desktopContent: some View {
         AppSettingsContentScaffold(maxContentWidth: nil) {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(AboutSection.allCases, id: \.self) { section in
