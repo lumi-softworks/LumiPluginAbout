@@ -46,6 +46,8 @@ manifest 包名不带 `Lumi` 前缀会让用户在 Xcode 里看不到前缀。�
 
 ## 页面结构
 
+iOS 使用系统 `Form` 分组列表（与设置 App 一致），macOS 使用桌面卡片布局。
+
 页面上只有两个分组，顺序由 `AboutSection.allCases` 决定：
 
 | 顺序 | 分组 | 内容 |
@@ -143,8 +145,8 @@ AboutPlugin(configuration: ..., policy: .disabled)
 
 ## 链接跳转
 
-详情视图用 SwiftUI 的 `openURL` 环境值打开链接，天然跨平台（含 visionOS），
-不需要 AppKit / UIKit 分支——`UIApplication.shared.open` 在 visionOS 上不可用。
+iOS 使用原生 `Link` 打开外链，macOS 使用 SwiftUI 的 `openURL` 环境值。
+两者都由系统交给默认浏览器处理，不需要 AppKit / UIKit 分支。
 
 ## 目录数据
 
