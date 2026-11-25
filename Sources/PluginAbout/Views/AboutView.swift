@@ -48,14 +48,14 @@ public struct AboutView: View {
     }
 
     public var body: some View {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         iosContent
         #else
         desktopContent
         #endif
     }
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     private var iosContent: some View {
         Form {
             Section {
